@@ -1,10 +1,12 @@
 import { Router } from "express";
 import ProductManagerMongo from "../dao/productManagerMongo.js";
+import passport from "passport";
+import {auth} from '../middleware/auth.js';
 
 const PM= new ProductManagerMongo();
 const productMongoRouter = Router();
 
-productMongoRouter.get("/", async (req, res) => {
+productMongoRouter.get("/",passport.authenticate("jwt", {session:false}) ,auth('user') ,async (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
     const page = parseInt(req.query.page) || 1;
     const sort = req.query.sort;
@@ -19,7 +21,7 @@ productMongoRouter.get("/", async (req, res) => {
     }
 })
 
-productMongoRouter.get("/:id", async (req, res) => {
+productMongoRouter.get("/:id",passport.authenticate("jwt", {session:false}) ,auth('user'), async (req, res) => {
     let id = req.params.id;
     try {
       let product = await PM.getProductById(id);
@@ -30,7 +32,7 @@ productMongoRouter.get("/:id", async (req, res) => {
     }
   })
   
-  productMongoRouter.post("/", (req, res) => {
+  productMongoRouter.post("/",passport.authenticate("jwt", {session:false}) ,auth('admin'), (req, res) => {
       let {title, description, code, price, status, stock, category, thumbnails} = req.body;
   
       if (!title) {
